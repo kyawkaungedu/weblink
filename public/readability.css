@@ -1,0 +1,63 @@
+/* Readable typography, without changing extraction or theme behavior. */
+html{font-size:16px;text-size-adjust:100%;-webkit-text-size-adjust:100%}
+body.bg-base-100{font-size:17px;line-height:1.9}
+main{overflow:visible}
+.masthead,.header-tools{flex-wrap:wrap}
+.wordmark{font-size:19px;flex-wrap:wrap;row-gap:10px}
+.edition,.nav-note{font-size:13px}
+.eyebrow{font-size:14px;letter-spacing:1.5px}
+.hero-copy>p{font-size:18px;line-height:2}
+.hero-tags span{font-size:13px;letter-spacing:.4px;padding:6px 10px}
+.art-label{font-size:13px}
+.panel-label,.result-kicker{font-size:16px;letter-spacing:.6px;line-height:1.6}
+.step-number{font-size:15px;min-width:34px;min-height:34px}
+.card-body{gap:20px}
+.card-body>p{line-height:2;overflow-wrap:anywhere}
+.badge{font-size:14px;padding:6px 10px;white-space:normal}
+.input,.select,.textarea{font-size:17px;min-height:52px;line-height:1.65}
+.select{max-width:250px;padding-block:10px}
+.input::placeholder{font-size:16px}
+.btn,.btn-sm{font-size:16px;min-height:48px;padding:10px 16px;line-height:1.65}
+.btn-xs{font-size:15px;min-height:44px;padding:8px 10px;white-space:normal;text-align:left}
+.small,.metric .small{font-size:15px;line-height:1.95}
+.statusline{font-size:16px;align-items:baseline}
+.theme-picker{font-size:14px}
+.theme-picker .select{font-size:16px;width:132px;min-height:46px;height:auto;padding-block:8px}
+#title{font-size:26px;line-height:1.7;overflow-wrap:anywhere}
+.metric strong{font-size:44px}
+.metric{padding:18px}
+.table{font-size:16px;min-width:760px}
+.table thead{font-size:14px;letter-spacing:.2px}
+.table th,.table td{padding:16px 14px;line-height:1.8}
+.table .btn-xs{font-size:15px;white-space:nowrap}
+.site-footer{font-size:13px;letter-spacing:.3px;line-height:1.8}
+.grow,.controls>*{min-width:0}
+.url-wrap{min-width:220px}
+.scroll{max-width:100%;overscroll-behavior-x:contain}
+@media(max-width:700px){
+ main{padding:22px 18px;gap:26px}
+ .hero{grid-template-columns:1fr}
+ .hero-art{display:none}
+ .hero h1{font-size:clamp(60px,12vw,84px)}
+ .hero-copy>p{font-size:18px;max-width:none}
+ .hero-tags{gap:8px;margin-top:18px}
+ .hero-tags span{font-size:13px;padding:6px 9px}
+ .eyebrow{font-size:14px}
+ .wordmark{font-size:17px}
+ .edition{font-size:12px}
+ .card-body{padding:20px 16px}
+ .panel-label{font-size:15px}
+ .badge{font-size:14px}
+ .theme-picker .select{width:126px}
+ .stats-grid{grid-template-columns:1fr;gap:12px}
+ .metric{display:flex;align-items:center;gap:18px;padding:14px 18px}
+ .metric strong{font-size:38px;min-width:2ch}
+ .metric .small{font-size:16px}
+ .select{max-width:none;flex:1 1 160px}
+ #search{flex:1 1 100%;width:100%}
+ #extract{width:100%;white-space:normal}
+ .url-wrap{min-width:0;flex-basis:100%;width:100%}
+ .url-wrap .input{width:100%;font-size:16px}
+ .small{font-size:15px}
+ .site-footer{font-size:13px}
+}
