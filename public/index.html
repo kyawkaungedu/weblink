@@ -13,6 +13,17 @@
     <link rel="stylesheet" href="./themes.css" />
     <link rel="stylesheet" href="./readability.css" />
     <link rel="stylesheet" href="./artwork.css" />
+    <style>
+      button.btn{position:relative;overflow:hidden;isolation:isolate;touch-action:manipulation;transition:translate .16s ease,box-shadow .16s ease,filter .16s ease}
+      button.btn:not(:disabled):active{translate:2px 2px;filter:brightness(1.08)}
+      button.btn:focus-visible{outline:3px solid var(--color-primary,#f4a52c);outline-offset:4px}
+      .button-ripple{position:absolute;border-radius:50%;background:currentColor;opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(0);animation:button-ripple .6s ease-out forwards}
+      @keyframes button-ripple{0%{opacity:.32;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+      #clearAll{min-height:48px}
+      #extract.is-working::before{content:'';width:17px;height:17px;flex-shrink:0;border:3px solid currentColor;border-right-color:transparent;border-radius:50%;animation:button-spin .75s linear infinite}
+      @keyframes button-spin{to{rotate:360deg}}
+      @media(prefers-reduced-motion:reduce){button.btn{transition:none}button.btn:not(:disabled):active{translate:none}.button-ripple,#extract.is-working::before{animation:none}}
+    </style>
   </head>
   <body class="bg-base-100 text-base-content">
     <main>
@@ -25,6 +36,7 @@
           <label class="url-wrap"><span aria-hidden="true">↗</span><input id="url" class="input input-bordered grow" type="url" required placeholder="Movie / Series ပို့စ် link အပြည့်အစုံ ထည့်ပါ" aria-label="HomieTV / YSFlix / RMCMM / AdsFly URL" /></label>
           <button id="extract" class="btn btn-primary" type="submit">⚡ Link အကုန်ထုတ်မယ်</button>
           <button id="cancel" class="btn btn-ghost" type="button" hidden>ရပ်မယ်</button>
+          <button id="clearAll" class="btn btn-outline" type="button">✕ Clear All</button>
         </form>
         <div class="controls small"><span class="muted">HomieTV / YSFlix / RMCMM ရဲ့ movie သို့မဟုတ် series ပို့စ် link၊ ဒါမှမဟုတ် AdsFly link ထည့်ပါ။</span></div>
         <div id="status" class="statusline small" role="status" aria-live="polite">Link ထည့်ပြီး စတင်နိုင်ပါပြီ။</div>
