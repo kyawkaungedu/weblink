@@ -16,7 +16,7 @@ import urllib.request
 import uuid
 
 ROOT = Path(__file__).resolve().parent
-JOBS = ROOT / 'link-jobs'
+JOBS = Path(os.environ.get('LINK_JOBS_DIR', str(ROOT / 'link-jobs')))
 JOBS.mkdir(exist_ok=True)
 ALLOWED = {'homietv.com', 'www.homietv.com', 'ysflix.com', 'www.ysflix.com', 'adsfly.org', 'www.adsfly.org', 'rmcmm.org', 'www.rmcmm.org'}
 
