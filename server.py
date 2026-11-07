@@ -51,6 +51,11 @@ class Handler(BaseHTTPRequestHandler):
             except FileNotFoundError:
                 return self.send(404, {'error': 'Job မတွေ့ပါ။'})
         files = {'/theme.js': ('theme.js', 'text/javascript; charset=utf-8'), '/themes.css': ('themes.css', 'text/css; charset=utf-8'), '/': ('index.html', 'text/html; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'), '/comic.css': ('comic.css', 'text/css; charset=utf-8')}
+        files.update({
+            '/readability.css': ('readability.css', 'text/css; charset=utf-8'),
+            '/artwork.css': ('artwork.css', 'text/css; charset=utf-8'),
+            '/assets/link-lab-art.webp': ('assets/link-lab-art.webp', 'image/webp'),
+        })
         if path not in files:
             return self.send(404, {'error': 'Not found'})
         filename, kind = files[path]
