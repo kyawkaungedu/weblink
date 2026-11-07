@@ -102,7 +102,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200, {'cancelled': True})
             return self.send(404, {'error': 'Not found'})
         except (ValueError, TypeError, KeyError):
-            return self.send(400, {'error': 'HTTPS HomieTV / RMCMM / AdsFly link မှန်မှန်ထည့်ပေးပါ။'})
+            return self.send(400, {'error': 'HTTPS HomieTV / YSFlix / RMCMM / AdsFly link မှန်မှန်ထည့်ပေးပါ။'})
 
 if __name__ == '__main__':
     ThreadingHTTPServer(('0.0.0.0', int(os.environ.get('PORT', '8080'))), Handler).serve_forever()

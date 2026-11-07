@@ -63,7 +63,7 @@ $('form').onsubmit=async event=>{
   $('error').hidden=true;$('notice').textContent='';$('copyFallback').hidden=true;
   try {
     const url=$('url').value.trim(),p=new URL(url);
-    if(p.protocol!=='https:'||!['homietv.com','www.homietv.com','adsfly.org','www.adsfly.org','rmcmm.org','www.rmcmm.org'].includes(p.hostname)||p.username||p.password||(p.port&&p.port!=='443'))throw new Error('HTTPS HomieTV / RMCMM / AdsFly link ထည့်ပေးပါ။');
+    if(p.protocol!=='https:'||!['homietv.com','www.homietv.com','ysflix.com','www.ysflix.com','adsfly.org','www.adsfly.org','rmcmm.org','www.rmcmm.org'].includes(p.hostname)||p.username||p.password||(p.port&&p.port!=='443'))throw new Error('HTTPS HomieTV / YSFlix / RMCMM / AdsFly link ထည့်ပေးပါ။');
     setBusy(true);$('status').textContent='စတင်နေပါတယ်…';state={rows:[]};render();
     const result=await command('start',url);currentJob=result.job;await poll(currentJob);
   }catch(err){setBusy(false);showError(err);}

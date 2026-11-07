@@ -1,4 +1,4 @@
-"""One-click HomieTV/AdsFly extractor. Standard-library-only Python backend."""
+"""One-click HomieTV/YSFlix/RMCMM/AdsFly extractor. Standard-library-only backend."""
 import concurrent.futures
 import hashlib
 import html
@@ -18,12 +18,12 @@ import uuid
 ROOT = Path(__file__).resolve().parent
 JOBS = ROOT / 'link-jobs'
 JOBS.mkdir(exist_ok=True)
-ALLOWED = {'homietv.com', 'www.homietv.com', 'adsfly.org', 'www.adsfly.org', 'rmcmm.org', 'www.rmcmm.org'}
+ALLOWED = {'homietv.com', 'www.homietv.com', 'ysflix.com', 'www.ysflix.com', 'adsfly.org', 'www.adsfly.org', 'rmcmm.org', 'www.rmcmm.org'}
 
 def validate(url):
     p = urllib.parse.urlsplit(url)
     if p.scheme != 'https' or p.hostname not in ALLOWED or p.username or p.password or p.port not in (None, 443):
-        raise ValueError('HTTPS HomieTV / AdsFly / RMCMM link ပဲ ထည့်ပေးပါ။')
+        raise ValueError('HTTPS HomieTV / YSFlix / RMCMM / AdsFly link ပဲ ထည့်ပေးပါ။')
     return p
 
 class SafeRedirect(urllib.request.HTTPRedirectHandler):
@@ -191,10 +191,13 @@ def collect(url):
         return 'AdsFly link', [{'episode': 'Single link', 'server': 'Destination', 'size': '', 'resolution': '', 'source': url}]
     m = re.fullmatch(r'/(tv-show|movie)/([A-Za-z0-9_-]+)/?', p.path)
     if not m:
-        raise ValueError('HomieTV ရဲ့ /tv-show/... သို့မဟုတ် /movie/... ပို့စ် link ထည့်ပေးပါ။')
+        raise ValueError('HomieTV / YSFlix ရဲ့ /tv-show/... သို့မဟုတ် /movie/... ပို့စ် link အပြည့်အစုံ ထည့်ပေးပါ။')
     kind, slug = m.groups()
     route = '/api/tv-shows/' if kind == 'tv-show' else '/api/movies/'
-    answer = json.loads(fetch(opener(), 'https://www.homietv.com' + route + slug))
+    # Keep each site's slug on its own API; the sites share a data format,
+    # but availability and titles are not assumed to be interchangeable.
+    origin = 'https://www.ysflix.com' if p.hostname in {'ysflix.com', 'www.ysflix.com'} else 'https://www.homietv.com'
+    answer = json.loads(fetch(opener(), origin + route + slug))
     data = answer.get('data', answer)
     if not isinstance(data, dict) or not data.get('title'):
         raise ValueError('ပို့စ်အချက်အလက် မတွေ့ပါ။')
@@ -207,7 +210,7 @@ def collect(url):
                     'size': str(item.get('size') or ''), 'resolution': str(item.get('resolution') or ''), 'source': u})
     for season in data.get('seasons') or []:
         for ep in season.get('episodes') or []:
-            label = f"S{ep.get('season_number') or 1} · Episode {ep.get('episode_number') or ep.get('name') or '?'}"
+            label = f"S{ep.get('season_number') or season.get('season_number') or 1} · Episode {ep.get('episode_number') or ep.get('name') or '?'}"
             add(ep.get('tvshow_download_links') or ep.get('download_links'), label)
     for key in ('movie_download_links', 'tv_show_download_links', 'download_links', 'downloads', 'zip_download_links'):
         add(data.get(key), 'Movie' if kind == 'movie' else 'Full season / Other')
