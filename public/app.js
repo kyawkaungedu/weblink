@@ -1,6 +1,6 @@
 const $ = id => document.getElementById(id);
 let state = {rows: []}, currentJob = '', busy = false, generation = 0;
-const safeURL = u => { try { const p = new URL(u); return ['https:', 'http:'].includes(p.protocol) ? p.href : ''; } catch { return ''; } };
+const safeURL = u => { try { if(typeof u!=='string')return '';const p = new URL(u); return ['https:', 'http:'].includes(p.protocol)&&p.hostname&&!p.username&&!p.password ? p.href : ''; } catch { return ''; } };
 async function command(action, value) {
   if(action === 'latest') {
     const job = sessionStorage.getItem('link-job');
@@ -12,7 +12,6 @@ async function command(action, value) {
   const response = await fetch(endpoint, options);
   const data = await response.json();
   if(!response.ok) throw new Error(data.error || 'Server error');
-  if(action === 'start') sessionStorage.setItem('link-job',data.job);
   return data;
 }
 function setBusy(value){busy=value;$('extract').disabled=value;$('extract').classList.toggle('is-working',value);$('extract').setAttribute('aria-busy',String(value));$('extract').textContent=value?'Link ထုတ်နေပါတယ်…':'⚡ Link အကုန်ထုတ်မယ်';$('url').disabled=value;$('cancel').hidden=!value;$('progress').hidden=!value;}
@@ -24,7 +23,7 @@ function render(){
   $('results').hidden=!(state.total||state.rows?.length);
   $('title').textContent=state.title||'Link ရလဒ်များ';
   $('total').textContent=state.total||0;
-  $('success').textContent=(state.rows||[]).filter(r=>r.url).length;
+  $('success').textContent=(state.rows||[]).filter(r=>safeURL(r.url)).length;
   $('failed').textContent=(state.rows||[]).filter(r=>r.status==='failed').length;
   $('finishedBadge').hidden=state.status!=='complete';
   const previous=$('server').value, servers=[...new Set((state.rows||[]).map(r=>r.server))].sort();
@@ -60,17 +59,18 @@ async function poll(job,version){
 $('form').onsubmit=async event=>{
   event.preventDefault();if(busy)return;
   const version=++generation;
+  currentJob='';sessionStorage.removeItem('link-job');
   $('error').hidden=true;$('notice').textContent='';$('copyFallback').hidden=true;
   try {
     const url=$('url').value.trim(),p=new URL(url);
-    if(p.protocol!=='https:'||!['homietv.com','www.homietv.com','ysflix.com','www.ysflix.com','adsfly.org','www.adsfly.org','rmcmm.org','www.rmcmm.org'].includes(p.hostname)||p.username||p.password||(p.port&&p.port!=='443'))throw new Error('HTTPS HomieTV / YSFlix / RMCMM / AdsFly link ထည့်ပေးပါ။');
+    if(p.protocol!=='https:'||!['homietv.com','www.homietv.com','ysflix.com','www.ysflix.com','adsfly.org','www.adsfly.org','rmcmm.org','www.rmcmm.org','xxxmmsub.com','www.xxxmmsub.com'].includes(p.hostname)||p.username||p.password||(p.port&&p.port!=='443'))throw new Error('Support လုပ်ထားသော website မှ HTTPS link အပြည့်အစုံ ထည့်ပေးပါ။');
     setBusy(true);$('status').textContent='စတင်နေပါတယ်…';state={rows:[]};render();
     const result=await command('start',url);
     if(version!==generation){if(sessionStorage.getItem('link-job')===result.job)sessionStorage.removeItem('link-job');command('cancel',result.job).catch(console.error);return;}
-    currentJob=result.job;await poll(currentJob,version);
+    currentJob=result.job;sessionStorage.setItem('link-job',result.job);await poll(currentJob,version);
   }catch(err){if(version===generation){setBusy(false);showError(err);}}
 };
-$('cancel').onclick=async()=>{const version=generation;try{$('cancel').disabled=true;await command('cancel',currentJob);if(version===generation)$('status').textContent='ရပ်တန့်နေပါတယ်…';}catch(err){if(version===generation)showError(err);}finally{if(version===generation)$('cancel').disabled=false;}};
+$('cancel').onclick=async()=>{if(!currentJob){++generation;setBusy(false);$('status').textContent='ရပ်ထားပါပြီ။';return;}const version=generation;try{$('cancel').disabled=true;await command('cancel',currentJob);if(version===generation)$('status').textContent='ရပ်တန့်နေပါတယ်…';}catch(err){if(version===generation)showError(err);}finally{if(version===generation)$('cancel').disabled=false;}};
 $('clearAll').onclick=()=>{
   const oldJob=currentJob,wasBusy=busy;++generation;currentJob='';
   sessionStorage.removeItem('link-job');state={rows:[]};
@@ -81,7 +81,7 @@ $('clearAll').onclick=()=>{
   if(wasBusy&&oldJob)command('cancel',oldJob).catch(console.error);
 };
 $('search').oninput=render;$('server').onchange=render;$('quality').onchange=render;
-async function copy(text){try{await navigator.clipboard.writeText(text);$('notice').textContent='ကူးပြီးပါပြီ ✓';$('copyFallback').hidden=true;}catch{$('copyFallback').value=text;$('copyFallback').hidden=false;$('copyFallback').select();$('notice').textContent='ဒီစာသားကို ရွေးပြီး Copy လုပ်ပေးပါ။';}}
+async function copy(text){const version=generation;try{await navigator.clipboard.writeText(text);if(version!==generation)return;$('notice').textContent='ကူးပြီးပါပြီ ✓';$('copyFallback').hidden=true;}catch{if(version!==generation)return;$('copyFallback').value=text;$('copyFallback').hidden=false;$('copyFallback').select();$('notice').textContent='ဒီစာသားကို ရွေးပြီး Copy လုပ်ပေးပါ။';}}
 $('copyAll').onclick=()=>copy([...new Set(filtered().map(r=>safeURL(r.url)).filter(Boolean))].join('\n'));
 $('download').onclick=()=>{const text=[state.title,state.source,'',...filtered().map(r=>`${r.episode} | ${r.server} | ${r.size} | ${r.resolution}\n${safeURL(r.url)||`UNRESOLVED: ${r.source}`}\n`)].join('\n');const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));const a=element('a');a.href=url;a.download='extracted-links.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);};
 // Start with a blank form; results appear only after the user submits a link.

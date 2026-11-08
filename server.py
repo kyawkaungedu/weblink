@@ -70,6 +70,8 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < length <= 12000:
                 return self.send(400, {'error': 'Invalid request size'})
             data = json.loads(self.rfile.read(length))
+            if not isinstance(data, dict):
+                return self.send(400, {'error': 'JSON object required'})
             path = urlsplit(self.path).path
             if path == '/api/start':
                 url = str(data.get('url', '')).strip()
@@ -89,8 +91,14 @@ class Handler(BaseHTTPRequestHandler):
                     job = uuid.uuid4().hex
                     jobs[job] = now
                     rate[ip] = now
-                extractor.save(job, {'job': job, 'source': url, 'status': 'queued', 'title': '', 'total': 0, 'done': 0, 'rows': []})
-                threading.Thread(target=run, args=(job, url), daemon=True).start()
+                try:
+                    extractor.save(job, {'job': job, 'source': url, 'status': 'queued', 'title': '', 'total': 0, 'done': 0, 'rows': []})
+                    threading.Thread(target=run, args=(job, url), daemon=True).start()
+                except Exception:
+                    with lock:
+                        jobs.pop(job, None)
+                    slots.release()
+                    return self.send(500, {'error': 'အလုပ်စတင်မရပါ။ ခဏနေရင် ပြန်စမ်းပါ။'})
                 return self.send(200, {'job': job})
             if path == '/api/cancel':
                 job = str(data.get('job', ''))
@@ -101,8 +109,9 @@ class Handler(BaseHTTPRequestHandler):
                 extractor.job_path(job).with_suffix('.cancel').write_text('cancel')
                 return self.send(200, {'cancelled': True})
             return self.send(404, {'error': 'Not found'})
-        except (ValueError, TypeError, KeyError):
-            return self.send(400, {'error': 'HTTPS HomieTV / YSFlix / RMCMM / AdsFly link မှန်မှန်ထည့်ပေးပါ။'})
+        except (ValueError, TypeError, KeyError) as err:
+            err_msg = str(err).strip() if str(err).strip() else 'Support လုပ်ထားသော website မှ HTTPS link အပြည့်အစုံ ထည့်ပေးပါ။'
+            return self.send(400, {'error': err_msg})
 
 if __name__ == '__main__':
     ThreadingHTTPServer(('0.0.0.0', int(os.environ.get('PORT', '8080'))), Handler).serve_forever()
